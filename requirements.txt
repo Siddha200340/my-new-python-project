@@ -1,0 +1,5 @@
+#!/bin/bash
+flask==3.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.0   # For environment variables
+psycopg2-binary==2.9.9 # If using PostgreSQL
