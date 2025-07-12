@@ -1,31 +1,29 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.9-slim'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
-    
+    agent any
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                sh 'docker build -t python-app .'
+                git 'https://github.com/your/repo.git'
             }
         }
-        
-        stage('Run') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker stop myapp1 || true'
-                sh 'docker rm myapp1 || true'
-                sh 'docker run -d -p 5000:5000 --name myapp1 python-app'
+                script {
+                    docker.build("your-image-name:${env.BUILD_ID}")
+                }
             }
         }
-        
-        stage('Test') {
+        stage('Run Container') {
             steps {
-                echo "Testing the application"
-                // Add actual test commands here
+                sh 'docker run -d --name your-container your-image-name:${BUILD_ID}'
             }
+        }
+        // Add testing stage here
+    }
+    post {
+        always {
+            // Clean up containers/images
+            sh 'docker rm -f your-container || true'
         }
     }
 }
