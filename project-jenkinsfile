@@ -1,0 +1,46 @@
+pipeline {
+    agent any  // Runs on any available agent
+
+    stages {
+        // Stage 1: Checkout code (including your Dockerfile)
+        stage('Checkout') {
+            steps {
+                checkout scm  // Gets your Git repo with Dockerfile
+            }
+        }
+
+        // Stage 2: Build YOUR custom Docker image
+        stage('Build Image') {
+            steps {
+                script {
+                    // Builds using YOUR Dockerfile in the repo root
+                    customImage = docker.build("my-python-app:${env.BUILD_ID}")
+                }
+            }
+        }
+
+        // Stage 3: Run commands INSIDE your custom image
+        stage('Run in Container') {
+            steps {
+                script {
+                    // Executes commands inside the image built from YOUR Dockerfile
+                    customImage.inside {
+                        sh 'python --version'  // Verify Python
+                        sh 'python app.py'     // Run your app
+                        // sh 'pytest'         // Or run tests
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up..."
+            script {
+                // Remove the temporary image
+                sh "docker rmi my-python-app:${env.BUILD_ID} || true"
+            }
+        }
+    }
+}
