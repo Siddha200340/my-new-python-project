@@ -1,17 +1,23 @@
 pipeline {
-    agent {
-        docker {
-            image "python:3.9-slim"
-        }
-        stages {
-            stage("Build") {
-                steps {
-                    script {
-                            sh 'docker build -t python-app .'
-                            sh 'docker stop myapp1 || true && docker rm myapp1 || true'
-                            sh 'docker run -d -p 5000:5000 --name myapp1 python-app'
-                    }
+    agent any
+    
+    stages {
+        stage("Build") {
+            agent {
+                docker {
+                    image "python:3.9-slim"
                 }
+            }
+            steps {
+                sh 'docker build -t python-app .'
+                sh 'docker stop myapp1 || true && docker rm myapp1 || true'
+                sh 'docker run -d -p 5000:5000 --name myapp1 python-app'
+            }
+        }
+        
+        stage("Test") {
+            steps {
+                echo "Testing the application"
             }
         }
     }
